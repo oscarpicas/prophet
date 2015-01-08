@@ -1,7 +1,7 @@
-#!/usr/bin/env python
 from prophet.utils.formatters import dict_to_table
 
 import math
+import numpy as np
 
 
 class Analyzer(object):
@@ -42,6 +42,15 @@ class CumulativeReturn(Analyzer):
         return backtest.normalize0()[-1]
 
 
+class MaximumDrawdown(Analyzer):
+    name = "maximum_drawdown"
+
+    def run(self, backtest, **kwargs):
+        dd_end = np.argmax(np.maximum.accumulate(backtest) - backtest)
+        dd_start = np.argmax(backtest[:dd_end])
+        return 1-backtest[dd_end]/backtest[dd_start]
+
+
 class Analysis(dict):
 
     def __repr__(self):
@@ -50,4 +59,4 @@ class Analysis(dict):
 
 
 default_analyzers = [Volatility(), AverageReturn(),
-                     Sharpe(), CumulativeReturn()]
+                     Sharpe(), CumulativeReturn(), MaximumDrawdown()]
